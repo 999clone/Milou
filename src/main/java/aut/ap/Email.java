@@ -66,6 +66,9 @@ public class Email {
     public LocalDateTime getDate() {
         return date;
     }
+    public void setDate(LocalDateTime date) {
+        this.date = date;
+    }
 
     public String getCode() {
         return code;
