@@ -11,7 +11,7 @@ public class Recipient {
     private int id;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "recipients_id")
     private User user;
 
     @ManyToOne(optional = false)
