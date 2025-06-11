@@ -18,6 +18,8 @@ public class User {
     @Basic(optional = false)
     private String email;
 
+//    private boolean justLoggedIn = false;
+
     public User() {}
 
     public User(String name, String password, String email) {
@@ -26,6 +28,12 @@ public class User {
         this.email = email;
     }
 
+//    public void setJustLoggedIn(boolean justLoggedIn) {
+//        this.justLoggedIn = justLoggedIn;
+//    }
+//    public boolean isJustLoggedIn() {
+//        return justLoggedIn;
+//    }
     public Integer getId() {
         return id;
     }
@@ -50,7 +58,7 @@ public class User {
     }
     public void setEmail(String email) {
         if (!email.contains("@")) {
-            this.email += email.toLowerCase() + "@milou.com";
+            this.email = email.toLowerCase() + "@milou.com";
         }else {
             this.email = email.toLowerCase();
         }

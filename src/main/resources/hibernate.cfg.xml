@@ -18,9 +18,9 @@
             IloVeu13!?
         </property>
         <!-- Hibernate settings -->
-        <property name="hibernate.show_sql">true</property>
-        <property name="hibernate.format_sql">true</property>
-        <property name="hibernate.highlight_sql">true</property>
+        <property name="hibernate.show_sql">false</property>
+        <property name="hibernate.format_sql">false</property>
+        <property name="hibernate.highlight_sql">false</property>
 
         <mapping class="aut.ap.User"/>
         <mapping class="aut.ap.Email"/>

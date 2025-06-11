@@ -21,6 +21,7 @@ public class Main {
             if (currentUser == null) {
                 showLoginMenu();
             } else {
+//                currentUser.setJustLoggedIn(true);
                 showUserMenu();
             }
         }
@@ -86,11 +87,14 @@ public class Main {
     }
 
     private static void showUserMenu() {
+//        if (currentUser.isJustLoggedIn())
+//            viewUnreadEmails();
         System.out.println("\n=== Menu for " + currentUser.getEmail() + " ===");
         System.out.println("1. Send Email");
         System.out.println("2. View Inbox");
-        System.out.println("3. View Sent Emails");
-        System.out.println("4. Logout");
+        System.out.println("3. View Unread Emails");
+        System.out.println("4. View sent Emails");
+        System.out.println("5. Logout");
         System.out.print("Choose: ");
         String choice = scanner.nextLine();
 
@@ -102,9 +106,13 @@ public class Main {
                 viewInbox();
                 break;
             case "3":
-                viewSentEmails();
+                viewUnreadEmails();
                 break;
             case "4":
+                viewSentEmails();
+                break;
+            case "5":
+//                currentUser.setJustLoggedIn(false);
                 currentUser = null;
                 System.out.println("Logged out.");
                 break;
@@ -159,8 +167,24 @@ public class Main {
             System.out.println("Code: " + e.getCode());
             System.out.println("From: " + e.getSender().getEmail());
             System.out.println("Subject: " + e.getSubject());
+            System.out.println("Body: " + e.getBody());
             System.out.println("Date: " + e.getDate());
+
             System.out.println("--------------------------");
+        }
+        System.out.println("for markingAsRead emails enter 1: | back: 0");
+        int n = scanner.nextInt();
+        scanner.nextLine();
+        if (n == 0){
+            return;
+        }
+        if (n == 1) {
+            System.out.println("email's code:");
+            String code = scanner.nextLine();
+
+            EmailDAO emailDAO = new EmailDAO();
+            Email email = emailDAO.findByCode(code);
+            emailDAO.markAsRead(currentUser.getId(), email.getId());
         }
     }
 
@@ -174,14 +198,51 @@ public class Main {
         for (Email e : emails) {
             System.out.println("Code: " + e.getCode());
             System.out.println("To: ");
-            // نمایش گیرنده‌ها با پرس‌وجو جداگانه
+
             List<User> recipients = getRecipientsOfEmail(e.getId());
             for (User r : recipients) {
                 System.out.println(" - " + r.getEmail());
             }
             System.out.println("Subject: " + e.getSubject());
+            System.out.println("Body: " + e.getBody());
             System.out.println("Date: " + e.getDate());
             System.out.println("--------------------------");
+        }
+    }
+
+    public static void viewUnreadEmails() {
+        List<Email> emails = emailDAO.findUnreadEmailsByUser(currentUser.getId());
+        if (emails.isEmpty()) {
+            System.out.println("No UnRead emails.");
+        }
+        System.out.println("=== Unread Emails ===");
+        for (Email e : emails) {
+            Recipient recipient = new Recipient(currentUser, e);
+            if (recipient == null) {
+                continue;
+            }
+            if (!recipient.isRead()){
+                System.out.println("Code: " + e.getCode());
+                System.out.println("From: " + e.getSender().getEmail());
+                System.out.println("Subject: " + e.getSubject());
+                System.out.println("Body: " + e.getBody());
+                System.out.println("Date: " + e.getDate());
+                System.out.println("--------------------------");
+            }
+            System.out.println("for markingAsRead emails enter 1: | back: 0");
+            int n = scanner.nextInt();
+            scanner.nextLine();
+            if (n == 0){
+                return;
+            }
+            if (n == 1) {
+                System.out.println("email's code:");
+                String code = scanner.nextLine();
+
+                EmailDAO emailDAO = new EmailDAO();
+                Email email = emailDAO.findByCode(code);
+                emailDAO.markAsRead(currentUser.getId(), email.getId());
+            }
         }
     }
 
