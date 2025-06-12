@@ -91,6 +91,7 @@ public class EmailDAO {
             query.setParameter("emailId", emailId);
             query.executeUpdate();
             tx.commit();
+            System.out.println("successfully marked as read");
         } catch (Exception e) {
             if (tx != null) tx.rollback();
             e.printStackTrace();
