@@ -28,9 +28,7 @@ public class EmailDAO {
             if (email.getDate() == null) {
                 email.setDate(java.time.LocalDateTime.now());
             }
-            System.out.println("khoobe");
             session.save(email);
-            System.out.println("khoobe2");
             for (User user : recipients) {
                 Recipient r = new Recipient();
                 r.setEmail(email);
@@ -38,12 +36,9 @@ public class EmailDAO {
                 r.setRead(false);
                 session.save(r);
             }
-            System.out.println("khoobe3");
             tx.commit();
-            System.out.println("khoobe4");
         } catch (Exception e) {
             if (tx != null) {
-                System.out.println("ridiiiiiiiii");
             }
             e.printStackTrace();
             throw e;

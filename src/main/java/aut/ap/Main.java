@@ -171,7 +171,7 @@ public class Main {
             System.out.println("Inbox is empty.");
             return;
         }
-        System.err.println("=== Inbox ===");
+        System.out.println("=== Inbox ===");
         for (Email e : emails) {
             System.out.println("Code: " + e.getCode());
             System.out.println("From: " + e.getSender().getEmail());
@@ -237,8 +237,9 @@ public class Main {
         List<Email> emails = emailDAO.findUnreadEmailsByUser(currentUser.getId());
         if (emails.isEmpty()) {
             System.out.println("No UnRead emails.");
+            return;
         }
-        System.err.println("=== Unread Emails ===");
+        System.out.println("=== Unread Emails ===");
         for (Email e : emails) {
             Recipient recipient = new Recipient(currentUser, e);
             if (recipient == null) {
