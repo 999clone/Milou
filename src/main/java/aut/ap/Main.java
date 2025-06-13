@@ -3,6 +3,7 @@ package aut.ap;
 import dao.EmailDAO;
 import dao.UserDAO;
 import org.hibernate.query.Query;
+import util.Style;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,7 +29,7 @@ public class Main {
     }
 
     private static void showLoginMenu() {
-        System.out.println("=== Welcome to Email System ===");
+        System.out.println(Style.bold(Style.red("=== Welcome to Email System ===")));
         System.out.println("1. Register");
         System.out.println("2. Login");
         System.out.println("0. Exit");
@@ -94,7 +95,7 @@ public class Main {
             viewUnreadEmails();
             currentUser.setJustLoggedIn(false);
         }
-        System.out.println("\n=== Menu for " + currentUser.getEmail() + " ===");
+        System.out.println(Style.bold(Style.blue("\n=== Menu for " + currentUser.getEmail() + " ===")));
         System.out.println("1. Send Email");
         System.out.println("2. View Inbox");
         System.out.println("3. View Unread Emails");
@@ -171,7 +172,7 @@ public class Main {
             System.out.println("Inbox is empty.");
             return;
         }
-        System.out.println("=== Inbox ===");
+        System.out.println(Style.bold(Style.blue("\n=== Inbox ===")));
         for (Email e : emails) {
             System.out.println("Code: " + e.getCode());
             System.out.println("From: " + e.getSender().getEmail());
@@ -181,7 +182,7 @@ public class Main {
 
             System.out.println("--------------------------");
         }
-        System.out.println("tools: ");
+        System.out.println(Style.bold(Style.yellow("tools: ")));
         System.out.println("1. Mark as Read an Email");
         System.out.println("2. Reply to Email");
         System.out.println("3. Forward the Email");
@@ -217,7 +218,7 @@ public class Main {
             System.out.println("No sent emails.");
             return;
         }
-        System.err.println("=== Sent Emails ===");
+        System.out.println(Style.bold(Style.blue("\n=== Sent Emails ===")));
         for (Email e : emails) {
             System.out.println("Code: " + e.getCode());
             System.out.println("To: ");
@@ -239,7 +240,7 @@ public class Main {
             System.out.println("No UnRead emails.");
             return;
         }
-        System.out.println("=== Unread Emails ===");
+        System.out.println(Style.bold(Style.blue("\n=== Unread Emails ===")));
         for (Email e : emails) {
             Recipient recipient = new Recipient(currentUser, e);
             if (recipient == null) {
