@@ -18,7 +18,8 @@ public class User {
     @Basic(optional = false)
     private String email;
 
-//    private boolean justLoggedIn = false;
+    @Transient
+    private boolean justLoggedIn = true;
 
     public User() {}
 
@@ -28,12 +29,13 @@ public class User {
         this.email = email;
     }
 
-//    public void setJustLoggedIn(boolean justLoggedIn) {
-//        this.justLoggedIn = justLoggedIn;
-//    }
-//    public boolean isJustLoggedIn() {
-//        return justLoggedIn;
-//    }
+    public void setJustLoggedIn(boolean justLoggedIn) {
+        this.justLoggedIn = justLoggedIn;
+    }
+    public boolean isJustLoggedIn() {
+        return justLoggedIn;
+    }
+
     public Integer getId() {
         return id;
     }

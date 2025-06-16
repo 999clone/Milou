@@ -3,7 +3,9 @@ package aut.ap;
 import dao.EmailDAO;
 import dao.UserDAO;
 import org.hibernate.query.Query;
+import util.Style;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
@@ -21,14 +23,13 @@ public class Main {
             if (currentUser == null) {
                 showLoginMenu();
             } else {
-//                currentUser.setJustLoggedIn(true);
                 showUserMenu();
             }
         }
     }
 
     private static void showLoginMenu() {
-        System.out.println("=== Welcome to Email System ===");
+        System.out.println(Style.bold(Style.red("=== Welcome to Email System ===")));
         System.out.println("1. Register");
         System.out.println("2. Login");
         System.out.println("0. Exit");
@@ -74,6 +75,8 @@ public class Main {
     private static void login() {
         System.out.print("Enter email: ");
         String email = scanner.nextLine().trim().toLowerCase();
+        if (!email.contains("@"))
+            email = email.toLowerCase() + "@milou.com";
         System.out.print("Enter password: ");
         String password = scanner.nextLine();
 
@@ -87,9 +90,12 @@ public class Main {
     }
 
     private static void showUserMenu() {
-//        if (currentUser.isJustLoggedIn())
-//            viewUnreadEmails();
-        System.out.println("\n=== Menu for " + currentUser.getEmail() + " ===");
+        List<Email> emails = emailDAO.findUnreadEmailsByUser(currentUser.getId());
+        if (currentUser.isJustLoggedIn() && !emails.isEmpty()) {
+            viewUnreadEmails();
+            currentUser.setJustLoggedIn(false);
+        }
+        System.out.println(Style.bold(Style.blue("\n=== Menu for " + currentUser.getEmail() + " ===")));
         System.out.println("1. Send Email");
         System.out.println("2. View Inbox");
         System.out.println("3. View Unread Emails");
@@ -112,7 +118,7 @@ public class Main {
                 viewSentEmails();
                 break;
             case "5":
-//                currentUser.setJustLoggedIn(false);
+                currentUser.setJustLoggedIn(false);
                 currentUser = null;
                 System.out.println("Logged out.");
                 break;
@@ -132,9 +138,13 @@ public class Main {
             User user = userDAO.findByEmail(email);
             if (user == null) {
                 System.out.println("User not found: " + email);
-                return;
             }
             recipients.add(user);
+        }
+
+        if (recipients.isEmpty()) {
+            System.out.println("No valid recipients. Email was not sent.");
+            return;
         }
 
         System.out.print("Enter subject: ");
@@ -162,7 +172,7 @@ public class Main {
             System.out.println("Inbox is empty.");
             return;
         }
-        System.out.println("=== Inbox ===");
+        System.out.println(Style.bold(Style.blue("\n=== Inbox ===")));
         for (Email e : emails) {
             System.out.println("Code: " + e.getCode());
             System.out.println("From: " + e.getSender().getEmail());
@@ -172,7 +182,12 @@ public class Main {
 
             System.out.println("--------------------------");
         }
-        System.out.println("for markingAsRead emails enter 1: | back: 0");
+        System.out.println(Style.bold(Style.yellow("tools: ")));
+        System.out.println("1. Mark as Read an Email");
+        System.out.println("2. Reply to Email");
+        System.out.println("3. Forward the Email");
+        System.out.println("4. Exit to Menu");
+        System.out.print("Choose: ");
         int n = scanner.nextInt();
         scanner.nextLine();
         if (n == 0){
@@ -186,7 +201,16 @@ public class Main {
             Email email = emailDAO.findByCode(code);
             emailDAO.markAsRead(currentUser.getId(), email.getId());
         }
+        switch (n){
+            case 2:
+                replyToEmail();
+                break;
+            case 3:
+                forwardEmail();
+                break;
+        }
     }
+
 
     private static void viewSentEmails() {
         List<Email> emails = emailDAO.findSentEmailsByUser(currentUser.getId());
@@ -194,7 +218,7 @@ public class Main {
             System.out.println("No sent emails.");
             return;
         }
-        System.out.println("=== Sent Emails ===");
+        System.out.println(Style.bold(Style.blue("\n=== Sent Emails ===")));
         for (Email e : emails) {
             System.out.println("Code: " + e.getCode());
             System.out.println("To: ");
@@ -214,8 +238,9 @@ public class Main {
         List<Email> emails = emailDAO.findUnreadEmailsByUser(currentUser.getId());
         if (emails.isEmpty()) {
             System.out.println("No UnRead emails.");
+            return;
         }
-        System.out.println("=== Unread Emails ===");
+        System.out.println(Style.bold(Style.blue("\n=== Unread Emails ===")));
         for (Email e : emails) {
             Recipient recipient = new Recipient(currentUser, e);
             if (recipient == null) {
@@ -229,22 +254,80 @@ public class Main {
                 System.out.println("Date: " + e.getDate());
                 System.out.println("--------------------------");
             }
-            System.out.println("for markingAsRead emails enter 1: | back: 0");
-            int n = scanner.nextInt();
-            scanner.nextLine();
-            if (n == 0){
-                return;
-            }
-            if (n == 1) {
-                System.out.println("email's code:");
-                String code = scanner.nextLine();
+        }
+        System.out.println("Choose: ");
+        System.out.println("1. Mark as Read an Email");
+        System.out.println("2. Reply to Email");
+        System.out.println("3. Forward the Email");
+        System.out.println("4. Exit to Menu");
+        System.out.print("Choose: ");
 
-                EmailDAO emailDAO = new EmailDAO();
-                Email email = emailDAO.findByCode(code);
-                emailDAO.markAsRead(currentUser.getId(), email.getId());
-            }
+        int n = scanner.nextInt();
+        scanner.nextLine();
+        if (n == 0){
+            return;
+        }
+        if (n == 1) {
+            System.out.println("email's code:");
+            String code = scanner.nextLine();
+
+            EmailDAO emailDAO = new EmailDAO();
+            Email email = emailDAO.findByCode(code);
+            emailDAO.markAsRead(currentUser.getId(), email.getId());
+        }
+        switch (n){
+            case 2:
+                replyToEmail();
+                break;
+            case 3:
+                forwardEmail();
+                break;
         }
     }
+
+    private static void replyToEmail() {
+        System.out.print("Enter the code of the email you want to reply to: ");
+        String code = scanner.nextLine();
+        System.out.print("Enter your reply message: ");
+        String body = scanner.nextLine();
+
+        try {
+            emailDAO.replyToEmail(currentUser.getId(), code, body);
+            System.out.println("Reply sent successfully.");
+        } catch (Exception e) {
+            System.out.println("Failed to send the reply.");
+            e.printStackTrace();
+        }
+    }
+
+    private static void forwardEmail() {
+        System.out.print("Enter the code of the email you want to forward: ");
+        String code = scanner.nextLine();
+        System.out.print("How many recipients do you want to forward to? ");
+        int count = Integer.parseInt(scanner.nextLine());
+
+        List<User> newRecipients = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            System.out.print("Enter email of recipient " + (i + 1) + ": ");
+            String email = scanner.nextLine().toLowerCase();
+            User recipient = userDAO.findByEmail(email);
+            if (recipient != null) {
+                newRecipients.add(recipient);
+            } else {
+                System.out.println(" No user found with this email.");
+            }
+        }
+
+        try {
+            emailDAO.forwardEmail(currentUser.getId(), code, newRecipients);
+            System.out.println("Email forwarded successfully.");
+        } catch (Exception e) {
+            System.out.println("Failed to forward the email.");
+            e.printStackTrace();
+        }
+    }
+
+
 
     private static List<User> getRecipientsOfEmail(int emailId) {
         try (var session = util.HibernateUtil.getSessionFactory().openSession()) {
