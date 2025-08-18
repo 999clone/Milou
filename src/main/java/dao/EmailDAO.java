@@ -8,6 +8,7 @@ import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 import util.HibernateUtil;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
@@ -26,7 +27,7 @@ public class EmailDAO {
                 email.setCode(generateUniqueCode(session));
             }
             if (email.getDate() == null) {
-                email.setDate(java.time.LocalDateTime.now());
+                email.setDate(LocalDateTime.now());
             }
             session.save(email);
             for (User user : recipients) {
@@ -93,16 +94,19 @@ public class EmailDAO {
         }
     }
 
-    public void replyToEmail(int userId, String originalCode, String replyBody) {
+    public void replyToEmail(int userId, String originalCode, String replyBody) throws Exception {
         Transaction tx = null;
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try {
+            Session session = HibernateUtil.getSessionFactory().openSession();
+
             tx = session.beginTransaction();
 
             //Email original = findByCode(originalCode);
             Email original = session.createQuery("from Email where code = :code", Email.class)
                     .setParameter("code", originalCode)
                     .uniqueResult();
-            if (original == null) throw new RuntimeException("Original email not found");
+            if (original == null)
+                throw new Exception("Original email not found");
 
             Query<Recipient> query = session.createQuery("from Recipient r where r.email.id = :emailId and r.user.id = :userId", Recipient.class);
             query.setParameter("emailId", original.getId());
@@ -118,7 +122,7 @@ public class EmailDAO {
             reply.setSubject("[Re] " + original.getSubject());
             reply.setBody(replyBody);
             reply.setCode(generateUniqueCode(session));
-            reply.setDate(java.time.LocalDateTime.now());
+            reply.setDate(LocalDateTime.now());
 
             session.save(reply);
 
@@ -136,12 +140,14 @@ public class EmailDAO {
                 r.setRead(false);
                 session.save(r);
             }
-
+            markAsRead(userId, original.getId());
+            System.out.println("Reply sent successfully.");
             tx.commit();
-        } catch (Exception e) {
-            if (tx != null) tx.rollback();
-            e.printStackTrace();
-        }
+        }catch (Exception e) {
+            System.out.println("Failed to send the reply.");
+            if (tx != null && tx.isActive() && tx.getStatus().canRollback())
+                tx.rollback();
+            }
     }
 
     public void forwardEmail(int userId, String originalCode, List<User> newRecipients) {
@@ -171,7 +177,7 @@ public class EmailDAO {
             forward.setSubject("[Fw] " + original.getSubject());
             forward.setBody(original.getBody());
             forward.setCode(generateUniqueCode(session));
-            forward.setDate(java.time.LocalDateTime.now());
+            forward.setDate(LocalDateTime.now());
 
             session.save(forward);
 
@@ -182,11 +188,20 @@ public class EmailDAO {
                 r.setRead(false);
                 session.save(r);
             }
+            markAsRead(userId, original.getId());
 
             tx.commit();
-        } catch (Exception e) {
-            if (tx != null) tx.rollback();
-            e.printStackTrace();
+        }catch (Exception e) {
+            System.out.println("Failed to send the forward.");
+            if (tx != null && tx.isActive() && tx.getStatus().canRollback())
+                tx.rollback();
+        }
+    }
+
+    public List<Email> getAllEmails() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Query<Email> query = session.createQuery("from Email", Email.class);
+            return query.list();
         }
     }
 

@@ -194,12 +194,16 @@ public class Main {
             return;
         }
         if (n == 1) {
-            System.out.println("email's code:");
-            String code = scanner.nextLine();
+            try {
+                System.out.println("email's code:");
+                String code = scanner.nextLine();
 
-            EmailDAO emailDAO = new EmailDAO();
-            Email email = emailDAO.findByCode(code);
-            emailDAO.markAsRead(currentUser.getId(), email.getId());
+                EmailDAO emailDAO = new EmailDAO();
+                Email email = emailDAO.findByCode(code);
+                emailDAO.markAsRead(currentUser.getId(), email.getId());
+            }catch (Exception ex) {
+                System.out.println("Email not found.");
+            }
         }
         switch (n){
             case 2:
@@ -255,7 +259,7 @@ public class Main {
                 System.out.println("--------------------------");
             }
         }
-        System.out.println("Choose: ");
+        System.out.println(Style.bold(Style.yellow("tools: ")));
         System.out.println("1. Mark as Read an Email");
         System.out.println("2. Reply to Email");
         System.out.println("3. Forward the Email");
@@ -268,12 +272,16 @@ public class Main {
             return;
         }
         if (n == 1) {
-            System.out.println("email's code:");
-            String code = scanner.nextLine();
+            try {
+                System.out.println("email's code:");
+                String code = scanner.nextLine();
 
-            EmailDAO emailDAO = new EmailDAO();
-            Email email = emailDAO.findByCode(code);
-            emailDAO.markAsRead(currentUser.getId(), email.getId());
+                EmailDAO emailDAO = new EmailDAO();
+                Email email = emailDAO.findByCode(code);
+                emailDAO.markAsRead(currentUser.getId(), email.getId());
+            }catch (Exception ex){
+                System.out.println("Email NOT found");
+            }
         }
         switch (n){
             case 2:
@@ -293,18 +301,18 @@ public class Main {
 
         try {
             emailDAO.replyToEmail(currentUser.getId(), code, body);
-            System.out.println("Reply sent successfully.");
         } catch (Exception e) {
-            System.out.println("Failed to send the reply.");
             e.printStackTrace();
         }
     }
 
     private static void forwardEmail() {
-        System.out.print("Enter the code of the email you want to forward: ");
-        String code = scanner.nextLine();
-        System.out.print("How many recipients do you want to forward to? ");
-        int count = Integer.parseInt(scanner.nextLine());
+        try {
+            System.out.print("Enter the code of the email you want to forward: ");
+            String code = scanner.nextLine();
+            System.out.print("How many recipients do you want to forward to? ");
+            int count = Integer.parseInt(scanner.nextLine());
+
 
         List<User> newRecipients = new ArrayList<>();
         for (int i = 0; i < count; i++) {
@@ -318,12 +326,10 @@ public class Main {
             }
         }
 
-        try {
             emailDAO.forwardEmail(currentUser.getId(), code, newRecipients);
             System.out.println("Email forwarded successfully.");
         } catch (Exception e) {
             System.out.println("Failed to forward the email.");
-            e.printStackTrace();
         }
     }
 
